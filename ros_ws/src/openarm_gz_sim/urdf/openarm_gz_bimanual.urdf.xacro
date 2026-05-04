@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<robot name="openarm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    Gazebo Harmonic 向け URDF wrapper
+    - v10.urdf.xacro を bimanual=true, ros2_control=false, hand=true でインクルード
+    - Gazebo 専用 ros2_control xacro (GazeboSimSystem) を追加インクルード
+    - Gazebo system plugin (GazeboSimROS2ControlPlugin) を宣言
+  -->
+
+  <!-- xacro:arg は include より前に宣言して v10.urdf.xacro の default を上書き -->
+  <xacro:arg name="arm_type" default="v10"/>
+  <xacro:arg name="bimanual" default="true"/>
+  <xacro:arg name="ros2_control" default="false"/>
+  <xacro:arg name="hand" default="true"/>
+
+  <!-- upstream の双腕 URDF (ros2_controlタグなし) -->
+  <xacro:include filename="$(find openarm_description)/urdf/robot/v10.urdf.xacro"/>
+
+  <!-- Gazebo 専用 ros2_control (GazeboSimSystem) -->
+  <xacro:include filename="$(find openarm_gz_sim)/urdf/openarm_gz.ros2_control.xacro"/>
+
+  <!-- Gazebo システムプラグイン: コントローラーマネージャーを Gazebo 内で起動 -->
+  <gazebo>
+    <plugin filename="gz_ros2_control-system"
+            name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find openarm_gz_sim)/config/ros2_controllers.yaml</parameters>
+      <ros>
+        <remapping>~/robot_description:=/robot_description</remapping>
+      </ros>
+    </plugin>
+  </gazebo>
+
+</robot>

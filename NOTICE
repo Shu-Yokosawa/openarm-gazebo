@@ -1,0 +1,25 @@
+OpenArm Gazebo MoveIt2 Simulation
+Copyright 2025 Shu Yokosawa
+
+This product includes software developed by Enactic, Inc.
+(https://github.com/enactic)
+
+---
+
+The following packages in ros_ws/src/ are derived from
+enactic/openarm_ros2 (https://github.com/enactic/openarm_ros2),
+licensed under the Apache License, Version 2.0:
+
+  openarm_bimanual_moveit_config/
+
+Original copyright notices are retained in each file header.
+Modifications made in this repository:
+  - openarm_bimanual.srdf: updated end_effector parent_link and
+    added parent_group attributes for Jazzy MoveIt 2 compatibility
+  - ros2_controllers and launch files rewritten for Gazebo Harmonic
+
+---
+
+openarm_description is managed as a separate repository:
+  https://github.com/Shu-Yokosawa/openarm_description
+  (fork of https://github.com/enactic/openarm_description)

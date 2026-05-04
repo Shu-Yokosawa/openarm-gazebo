@@ -1,0 +1,22 @@
+# vcstool で管理する upstream パッケージ
+ros_ws/src/openarm_description/
+
+# ROS 2 build artifacts
+ros_ws/build/
+ros_ws/install/
+ros_ws/log/
+
+# 内部計画ドキュメント
+PLAN.md
+
+# Claude Code internal
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor
+.vscode/
+.idea/
+*.swp

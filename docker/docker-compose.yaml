@@ -1,0 +1,38 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: openarm_gazebo:latest
+    container_name: openarm_sim
+
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/tmp/.docker.xauth
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=42
+      # GPU なし — ソフトウェアレンダリング
+      - LIBGL_ALWAYS_SOFTWARE=1
+      - MESA_GL_VERSION_OVERRIDE=3.3
+
+    volumes:
+      # X11 GUI 転送
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-~/.Xauthority}:/tmp/.docker.xauth:rw
+      # ROS ワークスペース (ホストと共有)
+      - ../ros_ws:/home/rosdev/ros_ws:rw
+      # DDS 共有メモリ
+      - /dev/shm:/dev/shm
+
+    # ROS 2 DDS に必要
+    network_mode: host
+    ipc: host
+
+    security_opt:
+      - seccomp:unconfined
+
+    stdin_open: true
+    tty: true
+
+    command: /bin/bash

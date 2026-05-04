@@ -1,0 +1,5 @@
+repositories:
+  src/openarm_description:
+    type: git
+    url: https://github.com/Shu-Yokosawa/openarm_description.git
+    version: fix/finger-inertia-triangle-inequality
