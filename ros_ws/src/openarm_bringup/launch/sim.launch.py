@@ -63,7 +63,9 @@ def generate_launch_description():
 
     kinematics_yaml = load_yaml(moveit_pkg, "config", "kinematics.yaml")
     kinematics = {"robot_description_kinematics": kinematics_yaml}
-    joint_limits = load_yaml(moveit_pkg, "config", "joint_limits.yaml")
+    # MoveIt の TimeOptimalTrajectoryGeneration adapter は
+    # robot_description_planning.joint_limits.* から制限を読むため namespace で wrap する
+    joint_limits = {"robot_description_planning": load_yaml(moveit_pkg, "config", "joint_limits.yaml")}
     moveit_controllers = load_yaml(moveit_pkg, "config", "moveit_controllers.yaml")
     ompl_config = load_yaml(moveit_pkg, "config", "ompl_planning.yaml")
 
@@ -126,8 +128,10 @@ def generate_launch_description():
         DeclareLaunchArgument("use_sim_time", default_value="true"),
         gz_sim_launch,
         spawn_launch,
-        # 全コントローラー active 後に move_group + RViz を起動
-        TimerAction(period=20.0, actions=[move_group_node, rviz_node]),
+        # 全コントローラー active 後に move_group を起動
+        TimerAction(period=20.0, actions=[move_group_node]),
+        # move_group 初期化完了を待ってから RViz を起動 (同時起動だと MotionPlanning plugin が crash)
+        TimerAction(period=30.0, actions=[rviz_node]),
         # move_group 起動後にプランニングシーンを設定
         TimerAction(period=30.0, actions=[scene_setup_node]),
     ])

@@ -34,16 +34,28 @@ RViz opens automatically ~20 seconds after launch. The planning scene ground pla
 
 ## What You Can Do
 
-### Motion Planning via RViz
-- Use the **MotionPlanning** plugin → set a goal state → **Plan & Execute**
-- Planning groups: `left_arm`, `right_arm`, `left_gripper`, `right_gripper`
-- Named states: `home` (all zeros), `hands_up` (joint4 = 2 rad)
-- Gripper states: `open` (0.044 m), `half_closed` (0.022 m), `closed` (0 m)
+### Move the arm via RViz MotionPlanning (the recommended workflow)
 
-### Motion Planning via CLI
+The RViz window that opens at ~30 s contains the **MotionPlanning** plugin in the left dock. Follow these steps — each one matters; skipping any of them is the usual reason the robot does not move in Gazebo.
+
+1. **Wait for the simulation to finish initializing.** In the terminal that started the launch, wait until you see `You can start planning now!` from `move_group` and the RViz window has loaded the robot. This takes ~30 s.
+2. **Select a planning group** in the MotionPlanning panel → *Planning* tab → *Planning Group*. Pick one of `left_arm`, `right_arm`, `left_gripper`, `right_gripper`. Each plan moves only one group.
+3. **Set a goal state**. Either
+   - drag the orange interactive marker at the arm tip in the 3D view, or
+   - choose a named state from *Goal State* dropdown — `home` (all zeros), `hands_up` (joint4 = 2 rad). Grippers have `open` (0.044 m) / `half_closed` (0.022 m) / `closed` (0 m).
+4. **Click `Plan`.** RViz visualizes the planned trajectory as a ghost arm sweeping from start to goal. **Plan only renders in RViz — it does NOT move Gazebo.**
+5. **Click `Plan & Execute`** (or `Execute` after a successful Plan). *This* is the step that sends the trajectory to ros2_control and drives Gazebo. The real robot in the Gazebo window will move to the goal pose within a few seconds.
+6. **Confirm it moved** with `ros2 topic echo /joint_states --once` — the positions should match the goal.
+
+If `Plan & Execute` reports failure, check the move_group terminal output. The most common causes:
+- *“No acceleration limit was defined for joint …”* — `joint_limits.yaml` is missing acceleration limits (this repo ships with them set; if you replace the file, keep them).
+- *“Aborted due to goal_time_tolerance”* — the trajectory was too aggressive for sim physics. Lower `Velocity Scaling` / `Accel Scaling` sliders in the MotionPlanning panel.
+- *“Start state appears to be in collision”* — the planning scene thinks the arm is colliding with itself. Click *Update* under *Current State* or wait until the ground plane is published (~30 s).
+
+### Move the arm via CLI
 
 ```bash
-# Plan for left arm (returns a trajectory; val=99999 = SUCCESS in Jazzy MoveIt2)
+# Plan for left arm — error_code.val=1 is SUCCESS, 99999 is FAILURE (Jazzy moveit_msgs/MoveItErrorCodes)
 ros2 service call /plan_kinematic_path moveit_msgs/srv/GetMotionPlan \
   '{motion_plan_request: {group_name: "left_arm",
     goal_constraints: [{joint_constraints: [
@@ -52,6 +64,8 @@ ros2 service call /plan_kinematic_path moveit_msgs/srv/GetMotionPlan \
     ]}],
     num_planning_attempts: 5, allowed_planning_time: 5.0}}'
 ```
+
+`/plan_kinematic_path` only plans — it does not execute. To plan *and* execute, send a `moveit_msgs/action/MoveGroup` goal to `/move_action` with `planning_options.plan_only = false`, or drive the controller directly with a `control_msgs/action/FollowJointTrajectory` goal on `/<arm>_controller/follow_joint_trajectory`.
 
 ### Check Controller State
 
