@@ -11,7 +11,8 @@ ROS 2 Jazzy + Gazebo Harmonic + MoveIt 2 simulation for the OpenArm v10 bimanual
 
 ```bash
 # 1. Build the Docker image
-cd /path/to/openarm_gazebo
+#    docker-compose.yaml lives under docker/, so cd there first
+cd /path/to/openarm_gazebo/docker
 docker compose build
 
 # 2. Start a container
